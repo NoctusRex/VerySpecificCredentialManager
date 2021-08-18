@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace VerySpecificCredentialManager.Services
@@ -16,7 +17,7 @@ namespace VerySpecificCredentialManager.Services
             dynamic shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell"));
             dynamic link = shell.CreateShortcut(StartupPath);
 
-            link.TargetPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            link.TargetPath = Process.GetCurrentProcess().MainModule.FileName;
             link.WindowStyle = 1;
             link.Save();
         }

@@ -14,7 +14,7 @@
             }
 
             Credential credential = (Credential)obj;
-            return UserName == credential.UserName && Password == credential.Password && ProcessName == credential.ProcessName;
+            return ProcessName == credential.ProcessName;
         }
 
         public override int GetHashCode()

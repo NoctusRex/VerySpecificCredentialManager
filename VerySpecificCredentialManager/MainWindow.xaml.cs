@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Forms;
 using Unity;
@@ -18,6 +18,8 @@ namespace VerySpecificCredentialManager
         [Dependency]
         public StorageService StorageService { get; set; }
         [Dependency]
+        public StartUpService StartUpService { get; set; }
+        [Dependency]
         public HotkeyService HotkeyService { get; set; }
         [Dependency]
         public UnityContainer UnityContainer { get; set; }
@@ -31,6 +33,7 @@ namespace VerySpecificCredentialManager
         public MainWindow()
         {
             InitializeComponent();
+            // TODO: Minimize
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -41,7 +44,7 @@ namespace VerySpecificCredentialManager
                 List<Credential> credentials = StorageService.Read<List<Credential>>("Credentials");
                 string windowTitle = GetCurrentWindowTitle(GetForegroundWindow());
 
-                Credential credential = credentials.FirstOrDefault(x => x.ProcessName == windowTitle);
+                Credential credential = credentials.FirstOrDefault(x => new Regex(x.ProcessName).IsMatch(windowTitle));
 
                 if (credential is not null)
                 {
@@ -49,6 +52,8 @@ namespace VerySpecificCredentialManager
                     return;
                 }
             });
+
+            startUpCheckBox.IsChecked = StartUpService.StartUpEnabled;
         }
 
         public void LoadCredentials()
@@ -89,11 +94,19 @@ namespace VerySpecificCredentialManager
             const int nChars = 256;
             StringBuilder Buff = new(nChars);
 
-            if (GetWindowText(handle, Buff, nChars) > 0)
+            return GetWindowText(handle, Buff, nChars) > 0 ? Buff.ToString() : null;
+        }
+
+        private void startUpCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            if (startUpCheckBox.IsChecked.Value)
             {
-                return Buff.ToString();
+                StartUpService.CreateStartupShortcut();
             }
-            return null;
+            else
+            {
+                StartUpService.RemoveStartupShortcut();
+            }
         }
     }
 }
